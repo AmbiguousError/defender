@@ -80,20 +80,19 @@ class GameObject {
         const world_points = this.get_transformed_points();
         if (world_points.length === 0) return;
 
-        const screen_points = world_points.map(p => ({ x: p.x - camera_offset_x, y: p.y }));
-
+        // Draw the object in its primary position
+        let screen_points = world_points.map(p => ({ x: p.x - camera_offset_x, y: p.y }));
         this._draw_polygon_if_visible(ctx, screen_points);
 
-        const world_x_coords = world_points.map(p => p.x);
-        const min_world_x = Math.min(...world_x_coords);
-        const max_world_x = Math.max(...world_x_coords);
-
-        if (min_world_x < this.max_radius * 2 && camera_offset_x > WORLD_WIDTH - width) {
-            const wrapped_screen_points = screen_points.map(p => ({ x: p.x + WORLD_WIDTH, y: p.y }));
-            this._draw_polygon_if_visible(ctx, wrapped_screen_points);
-        } else if (max_world_x > WORLD_WIDTH - this.max_radius * 2 && camera_offset_x < width) {
-            const wrapped_screen_points = screen_points.map(p => ({ x: p.x - WORLD_WIDTH, y: p.y }));
-            this._draw_polygon_if_visible(ctx, wrapped_screen_points);
+        // Check if the object is near the wrap-around boundary and draw a copy
+        const max_dist_from_edge = this.max_radius + width / 2;
+        if (this.position.x < max_dist_from_edge) {
+            screen_points = world_points.map(p => ({ x: p.x + WORLD_WIDTH - camera_offset_x, y: p.y }));
+            this._draw_polygon_if_visible(ctx, screen_points);
+        }
+        if (this.position.x > WORLD_WIDTH - max_dist_from_edge) {
+            screen_points = world_points.map(p => ({ x: p.x - WORLD_WIDTH - camera_offset_x, y: p.y }));
+            this._draw_polygon_if_visible(ctx, screen_points);
         }
     }
 
@@ -122,7 +121,12 @@ class GameObject {
 
     update() {
         this.position = this.position.add(this.velocity);
-        this.position.x = (this.position.x + WORLD_WIDTH) % WORLD_WIDTH;
+        // Seamlessly wrap the object's position around the world
+        if (this.position.x < 0) {
+            this.position.x += WORLD_WIDTH;
+        } else if (this.position.x >= WORLD_WIDTH) {
+            this.position.x -= WORLD_WIDTH;
+        }
     }
 
     destroy(release_humanoid = true) {
@@ -232,7 +236,8 @@ class Player extends GameObject {
             if (lives > 0) {
                 setTimeout(() => this.respawn(), 2000);
             } else {
-                // Game over
+                gameOver = true;
+                document.getElementById('game-over-screen').style.display = 'block';
             }
         }
     }
@@ -460,11 +465,29 @@ class Terrain {
     draw(ctx, camera_offset_x) {
         ctx.strokeStyle = 'blue';
         ctx.lineWidth = 2;
+
+        // Draw the primary terrain segment
         ctx.beginPath();
         for (const point of this.points) {
             ctx.lineTo(point.x - camera_offset_x, point.y);
         }
         ctx.stroke();
+
+        // Draw the wrapped terrain segment if needed
+        if (camera_offset_x < width) {
+            ctx.beginPath();
+            for (const point of this.points) {
+                ctx.lineTo(point.x - camera_offset_x + this.world_width, point.y);
+            }
+            ctx.stroke();
+        }
+        if (camera_offset_x > this.world_width - width * 2) {
+            ctx.beginPath();
+            for (const point of this.points) {
+                ctx.lineTo(point.x - camera_offset_x - this.world_width, point.y);
+            }
+            ctx.stroke();
+        }
     }
 }
 
@@ -484,9 +507,18 @@ class ParallaxLayer {
 
     draw(ctx, camera_offset_x) {
         ctx.fillStyle = this.color;
+        const parallax_cam_x = camera_offset_x * this.scroll_factor;
+
         for (const element of this.elements) {
-            const parallax_cam_x = camera_offset_x * this.scroll_factor;
-            let screen_x = (element.x - parallax_cam_x + WORLD_WIDTH) % WORLD_WIDTH;
+            let screen_x = element.x - parallax_cam_x;
+
+            // Handle wrapping
+            if (screen_x < -element.size) {
+                screen_x += WORLD_WIDTH;
+            } else if (screen_x > width + element.size) {
+                screen_x -= WORLD_WIDTH;
+            }
+
             ctx.beginPath();
             ctx.arc(screen_x, element.y, element.size, 0, 2 * Math.PI);
             ctx.fill();
@@ -509,7 +541,18 @@ let camera_x = 0;
 let score = 0;
 let lives = 3;
 let level = 1;
+let gameOver = false;
 const keys = {};
+
+function restartGame() {
+    lives = 3;
+    score = 0;
+    level = 1;
+    gameOver = false;
+    document.getElementById('game-over-screen').style.display = 'none';
+    player.respawn();
+    setup_level(level);
+}
 
 function setup_level(level) {
     lasers = [];
@@ -573,8 +616,14 @@ document.getElementById('down-btn').addEventListener('touchstart', () => keys['d
 document.getElementById('down-btn').addEventListener('touchend', () => keys['down-btn'] = false);
 document.getElementById('fire-btn').addEventListener('touchstart', () => keys['fire-btn'] = true);
 document.getElementById('fire-btn').addEventListener('touchend', () => keys['fire-btn'] = false);
+document.getElementById('restart-btn').addEventListener('click', restartGame);
 
 function gameLoop() {
+    if (gameOver) {
+        requestAnimationFrame(gameLoop);
+        return;
+    }
+
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, width, height);
 
