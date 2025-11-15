@@ -12,14 +12,30 @@
             overflow: hidden;
             height: 100%;
             background-color: #000;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+        }
+        #start-btn {
+            font-size: 2rem;
+            padding: 15px 30px;
+            cursor: pointer;
         }
         #gameCanvas {
-            display: block;
+            display: none;
             width: 100%;
             height: 100%;
             background-color: #000;
         }
         #mobile-controls {
+            display: none;
             position: fixed;
             bottom: 20px;
             left: 0;
@@ -39,8 +55,12 @@
     </style>
 </head>
 <body>
+    <div id="start-screen">
+        <h1>Vector Defender</h1>
+        <button id="start-btn" class="btn btn-primary">Start Game</button>
+    </div>
     <canvas id="gameCanvas"></canvas>
-    <div id="mobile-controls" class="d-block d-sm-none">
+    <div id="mobile-controls" class="d-sm-none">
         <div class="row justify-content-between align-items-center">
             <!-- D-PAD on the left -->
             <div class="col-5">

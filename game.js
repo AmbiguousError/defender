@@ -633,5 +633,16 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-setup_level(level);
-gameLoop();
+function startGame() {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('gameCanvas').style.display = 'block';
+    const mobileControls = document.getElementById('mobile-controls');
+    if (window.innerWidth < 576) { // Bootstrap's sm breakpoint
+        mobileControls.style.display = 'block';
+    }
+
+    setup_level(level);
+    gameLoop();
+}
+
+document.getElementById('start-btn').addEventListener('click', startGame);
