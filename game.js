@@ -236,9 +236,8 @@ class Player extends GameObject {
             if (lives > 0) {
                 respawnTimeout = setTimeout(() => this.respawn(), 2000);
             } else {
-                gameOver = true;
+                gameState = GameState.GAME_OVER;
                 document.getElementById('game-over-screen').style.display = 'block';
-                requestAnimationFrame(gameLoop);
             }
         }
     }
@@ -542,7 +541,7 @@ class ParallaxLayer {
 }
 
 const WORLD_WIDTH = width * 3;
-const player = new Player(new Vector2(width / 2, height / 2));
+let player;
 const terrain = new Terrain(WORLD_WIDTH, height);
 const star_layer_far = new ParallaxLayer(WORLD_WIDTH, 200, 'gray', [0, 1], 0.1);
 const star_layer_near = new ParallaxLayer(WORLD_WIDTH, 100, 'white', [1, 2], 0.3);
@@ -557,18 +556,23 @@ let camera_x = 0;
 let score = 0;
 let lives = 3;
 let level = 1;
-let gameOver = false;
 let respawnTimeout;
 const keys = {};
+
+const GameState = {
+    START_SCREEN: 'start_screen',
+    PLAYING: 'playing',
+    GAME_OVER: 'game_over'
+};
+let gameState = GameState.START_SCREEN;
 
 function restartGame() {
     clearTimeout(respawnTimeout);
     lives = 3;
     score = 0;
     level = 1;
-    gameOver = false;
+    gameState = GameState.PLAYING;
     document.getElementById('game-over-screen').style.display = 'none';
-    player.respawn();
     setup_level(level);
 }
 
@@ -579,6 +583,8 @@ function setup_level(level) {
     landers = [];
     mutants = [];
     explosions = [];
+
+    player = new Player(new Vector2(width / 2, height / 2));
 
     for (let i = 0; i < 10; i++) {
         const x = Math.random() * WORLD_WIDTH;
@@ -663,13 +669,12 @@ function gameLoop() {
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, width, height);
 
-        if (gameOver) {
-            requestAnimationFrame(gameLoop);
-            return;
-        }
-        ctx.fillRect(0, 0, width, height);
-
-        player.handle_input(keys);
+        switch (gameState) {
+            case GameState.START_SCREEN:
+                // Do nothing, just wait for the user to click the start button
+                break;
+            case GameState.PLAYING:
+                player.handle_input(keys);
 
     if (!player.is_destroyed) {
         player.update();
@@ -719,14 +724,20 @@ function gameLoop() {
     ctx.fillText(`Score: ${score}`, 10, 30);
     ctx.fillText(`Lives: ${lives}`, 10, 60);
     ctx.fillText(`Level: ${level}`, 10, 90);
+                break;
+            case GameState.GAME_OVER:
+                // Do nothing, just wait for the user to click the restart button
+                break;
+        }
 
-    requestAnimationFrame(gameLoop);
+        requestAnimationFrame(gameLoop);
     } catch (e) {
         console.error(e);
     }
 }
 
 function startGame() {
+    gameState = GameState.PLAYING;
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('gameCanvas').style.display = 'block';
     const mobileControls = document.getElementById('mobile-controls');
