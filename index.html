@@ -21,33 +21,52 @@
         }
         #mobile-controls {
             position: fixed;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
+            bottom: 20px;
+            left: 0;
+            right: 0;
             z-index: 10;
+            padding: 0 20px;
+        }
+        #fire-btn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+        }
+        .d-pad-btn {
+            padding: 15px 20px;
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
     <div id="mobile-controls" class="d-block d-sm-none">
-        <div class="row">
-            <div class="col-4">
-                <button id="left-btn" class="btn btn-primary w-100 h-100">Left</button>
+        <div class="row justify-content-between align-items-center">
+            <!-- D-PAD on the left -->
+            <div class="col-5">
+                <div class="row">
+                    <div class="col-12 text-center mb-1">
+                        <button id="up-btn" class="btn btn-primary d-pad-btn">Up</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6 pe-1 text-end">
+                        <button id="left-btn" class="btn btn-primary d-pad-btn">Left</button>
+                    </div>
+                    <div class="col-6 ps-1 text-start">
+                        <button id="right-btn" class="btn btn-primary d-pad-btn">Right</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 text-center mt-1">
+                        <button id="down-btn" class="btn btn-primary d-pad-btn">Down</button>
+                    </div>
+                </div>
             </div>
-            <div class="col-4">
-                <button id="right-btn" class="btn btn-primary w-100 h-100">Right</button>
-            </div>
-            <div class="col-4">
-                <button id="fire-btn" class="btn btn-danger w-100 h-100">Fire</button>
-            </div>
-        </div>
-        <div class="row mt-2">
-            <div class="col-6">
-                <button id="up-btn" class="btn btn-primary w-100 h-100">Up</button>
-            </div>
-            <div class="col-6">
-                <button id="down-btn" class="btn btn-primary w-100 h-100">Down</button>
+
+            <!-- Fire button on the right -->
+            <div class="col-5 text-end">
+                <button id="fire-btn" class="btn btn-danger">Fire</button>
             </div>
         </div>
     </div>

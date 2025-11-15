@@ -266,6 +266,10 @@ class Laser extends GameObject {
             this.destroy();
         }
     }
+
+    destroy() {
+        this.alive = false;
+    }
 }
 
 class EnemyLaser extends Laser {
