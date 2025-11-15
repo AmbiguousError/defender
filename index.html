@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Vector Defender</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background-color: #000;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+        }
+        #start-btn {
+            font-size: 2rem;
+            padding: 15px 30px;
+            cursor: pointer;
+        }
+        #gameCanvas {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+        #mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 0 20px;
+        }
+        #fire-btn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+        }
+        .d-pad-btn {
+            padding: 15px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="start-screen">
+        <h1>Vector Defender</h1>
+        <button id="start-btn" class="btn btn-primary">Start Game</button>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="mobile-controls" class="d-sm-none">
+        <div class="row justify-content-between align-items-center">
+            <!-- D-PAD on the left -->
+            <div class="col-5">
+                <div class="row">
+                    <div class="col-12 text-center mb-1">
+                        <button id="up-btn" class="btn btn-primary d-pad-btn">Up</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6 pe-1 text-end">
+                        <button id="left-btn" class="btn btn-primary d-pad-btn">Left</button>
+                    </div>
+                    <div class="col-6 ps-1 text-start">
+                        <button id="right-btn" class="btn btn-primary d-pad-btn">Right</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 text-center mt-1">
+                        <button id="down-btn" class="btn btn-primary d-pad-btn">Down</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fire button on the right -->
+            <div class="col-5 text-end">
+                <button id="fire-btn" class="btn btn-danger">Fire</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
