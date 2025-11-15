@@ -215,9 +215,9 @@ class Player extends GameObject {
 
         super.update();
 
-        if (this.position.y > height - this.max_radius) {
-            this.position.y = height - this.max_radius;
-            this.velocity.y = 0;
+        const terrain_y = terrain.get_height_at(this.position.x);
+        if (this.position.y > terrain_y - this.max_radius) {
+            this.crash();
         } else if (this.position.y < this.max_radius) {
             this.position.y = this.max_radius;
             this.velocity.y = 0;
@@ -419,6 +419,20 @@ class Lander extends GameObject {
     }
 }
 
+class Mutant extends GameObject {
+    constructor(position, speed_multiplier = 1.0) {
+        const points = [ {x: -10, y: 0}, {x: -5, y: -5}, {x: 5, y: -5}, {x: 10, y: 0}, {x: 5, y: 5}, {x: -5, y: 5} ];
+        super(position, 'yellow', points);
+        this.seek_speed = 2.0 * speed_multiplier;
+    }
+
+    update(player) {
+        const direction = player.position.subtract(this.position).normalize();
+        this.velocity = direction.multiply(this.seek_speed);
+        super.update();
+    }
+}
+
 class Terrain {
     constructor(world_width, screen_height, segment_length = 25) {
         this.world_width = world_width;
@@ -536,6 +550,7 @@ let lasers = [];
 let enemy_lasers = [];
 let humanoids = [];
 let landers = [];
+let mutants = [];
 let explosions = [];
 let camera_x = 0;
 let score = 0;
@@ -559,6 +574,7 @@ function setup_level(level) {
     enemy_lasers = [];
     humanoids = [];
     landers = [];
+    mutants = [];
     explosions = [];
 
     for (let i = 0; i < 10; i++) {
@@ -572,16 +588,29 @@ function setup_level(level) {
         const y = Math.random() * height / 2;
         landers.push(new Lander(new Vector2(x, y), 1 + level * 0.1));
     }
+
+    for (let i = 0; i < 3 + level; i++) {
+        const x = Math.random() * WORLD_WIDTH;
+        const y = Math.random() * height / 2;
+        mutants.push(new Mutant(new Vector2(x, y), 1 + level * 0.1));
+    }
 }
 
 function check_collisions() {
-    // Player lasers with landers
+    // Player lasers with enemies
     for (const laser of lasers) {
         for (const lander of landers) {
             if (laser.position.subtract(lander.position).magnitude() < lander.max_radius) {
                 laser.destroy();
                 lander.destroy();
                 score += 150;
+            }
+        }
+        for (const mutant of mutants) {
+            if (laser.position.subtract(mutant.position).magnitude() < mutant.max_radius) {
+                laser.destroy();
+                mutant.destroy();
+                score += 100;
             }
         }
     }
@@ -637,6 +666,7 @@ function gameLoop() {
     enemy_lasers.forEach(l => l.update());
     humanoids.forEach(h => h.update(terrain));
     landers.forEach(l => l.update(humanoids, terrain));
+    mutants.forEach(m => m.update(player));
     explosions.forEach(e => e.update());
 
     check_collisions();
@@ -645,9 +675,10 @@ function gameLoop() {
     enemy_lasers = enemy_lasers.filter(l => l.alive);
     landers = landers.filter(l => l.alive);
     humanoids = humanoids.filter(h => h.alive);
+    mutants = mutants.filter(m => m.alive);
     explosions = explosions.filter(e => e.alive);
 
-    if (landers.length === 0) {
+    if (landers.length === 0 && mutants.length === 0) {
         level++;
         setup_level(level);
     }
@@ -666,6 +697,7 @@ function gameLoop() {
     enemy_lasers.forEach(l => l.draw(ctx, camera_x));
     humanoids.forEach(h => h.draw(ctx, camera_x));
     landers.forEach(l => l.draw(ctx, camera_x));
+    mutants.forEach(m => m.draw(ctx, camera_x));
     explosions.forEach(e => e.draw(ctx, camera_x));
 
     // Draw HUD
