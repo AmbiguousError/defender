@@ -127,9 +127,7 @@ class GameObject {
 
     destroy(release_humanoid = true) {
         this.alive = false;
-        for (let i = 0; i < 10; i++) {
-            explosions.push(new ExplosionParticle(this.position, this.color));
-        }
+        explosions.push(new Explosion(this.position, this.color));
         if (this instanceof Lander && this.target_humanoid && this.target_humanoid.is_captured) {
             this.target_humanoid.is_captured = false;
             this.target_humanoid.is_falling = true;
@@ -279,39 +277,37 @@ class EnemyLaser extends Laser {
     }
 }
 
-class ExplosionParticle extends GameObject {
-    constructor(position, base_color) {
-        super(position, base_color);
-        const speed = Math.random() * 3 + 1;
-        const angle = Math.random() * 2 * Math.PI;
-        this.velocity = new Vector2(Math.cos(angle), Math.sin(angle)).multiply(speed);
-        this.lifetime = Math.random() * 15 + 15;
-        this.start_radius = Math.random() * 2 + 1;
-        this.radius = this.start_radius;
-        this.color = ['red', 'orange', 'yellow', 'white'][Math.floor(Math.random() * 4)];
+class Explosion extends GameObject {
+    constructor(position, color) {
+        super(position, color);
+        this.duration = 0.5; // in seconds
+        this.time_elapsed = 0;
+        this.radii = [5, 10, 15, 20];
     }
 
     update() {
-        super.update();
-        this.lifetime -= 1;
-        this.radius = this.start_radius * (this.lifetime / 40.0);
-        if (this.lifetime <= 0 || this.radius < 1) {
-            this.destroy();
+        this.time_elapsed += 1 / 60; // Assuming 60 FPS
+        if (this.time_elapsed >= this.duration) {
+            this.alive = false;
         }
     }
 
     draw(ctx, camera_offset_x) {
-        let screen_x = this.position.x - camera_offset_x;
+        const screen_x = this.position.x - camera_offset_x;
         const screen_y = this.position.y;
+        const progress = this.time_elapsed / this.duration;
 
-        if (this.radius >= 1) {
-            ctx.fillStyle = this.color;
+        for (const radius of this.radii) {
             ctx.beginPath();
-            ctx.arc(screen_x, screen_y, this.radius, 0, 2 * Math.PI);
-            ctx.fill();
+            ctx.arc(screen_x, screen_y, radius * progress, 0, 2 * Math.PI);
+            ctx.strokeStyle = this.color;
+            ctx.globalAlpha = 1 - progress;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
         }
     }
 }
+
 
 class Humanoid extends GameObject {
     constructor(position) {
