@@ -127,7 +127,7 @@ class GameObject {
 
     destroy(release_humanoid = true) {
         this.alive = false;
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 10; i++) {
             explosions.push(new ExplosionParticle(this.position, this.color));
         }
         if (this instanceof Lander && this.target_humanoid && this.target_humanoid.is_captured) {
@@ -282,11 +282,11 @@ class EnemyLaser extends Laser {
 class ExplosionParticle extends GameObject {
     constructor(position, base_color) {
         super(position, base_color);
-        const speed = Math.random() * 4 + 2;
+        const speed = Math.random() * 3 + 1;
         const angle = Math.random() * 2 * Math.PI;
         this.velocity = new Vector2(Math.cos(angle), Math.sin(angle)).multiply(speed);
-        this.lifetime = Math.random() * 20 + 20;
-        this.start_radius = Math.random() * 2 + 2;
+        this.lifetime = Math.random() * 15 + 15;
+        this.start_radius = Math.random() * 2 + 1;
         this.radius = this.start_radius;
         this.color = ['red', 'orange', 'yellow', 'white'][Math.floor(Math.random() * 4)];
     }
