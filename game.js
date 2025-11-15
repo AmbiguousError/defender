@@ -234,7 +234,7 @@ class Player extends GameObject {
             lives--;
             this.destroy(false);
             if (lives > 0) {
-                setTimeout(() => this.respawn(), 2000);
+                respawnTimeout = setTimeout(() => this.respawn(), 2000);
             } else {
                 gameOver = true;
                 document.getElementById('game-over-screen').style.display = 'block';
@@ -558,9 +558,11 @@ let score = 0;
 let lives = 3;
 let level = 1;
 let gameOver = false;
+let respawnTimeout;
 const keys = {};
 
 function restartGame() {
+    clearTimeout(respawnTimeout);
     lives = 3;
     score = 0;
     level = 1;
@@ -657,16 +659,17 @@ document.getElementById('fire-btn').addEventListener('touchend', () => keys['fir
 document.getElementById('restart-btn').addEventListener('click', restartGame);
 
 function gameLoop() {
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, width, height);
+    try {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, width, height);
 
-    if (gameOver) {
-        requestAnimationFrame(gameLoop);
-        return;
-    }
-    ctx.fillRect(0, 0, width, height);
+        if (gameOver) {
+            requestAnimationFrame(gameLoop);
+            return;
+        }
+        ctx.fillRect(0, 0, width, height);
 
-    player.handle_input(keys);
+        player.handle_input(keys);
 
     if (!player.is_destroyed) {
         player.update();
@@ -718,6 +721,9 @@ function gameLoop() {
     ctx.fillText(`Level: ${level}`, 10, 90);
 
     requestAnimationFrame(gameLoop);
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 function startGame() {
