@@ -238,6 +238,7 @@ class Player extends GameObject {
             } else {
                 gameOver = true;
                 document.getElementById('game-over-screen').style.display = 'block';
+                requestAnimationFrame(gameLoop);
             }
         }
     }
@@ -630,6 +631,14 @@ function check_collisions() {
             player.crash();
         }
     }
+
+    // Player with mutants
+    for (const mutant of mutants) {
+        if (player.position.subtract(mutant.position).magnitude() < player.max_radius + mutant.max_radius) {
+            mutant.destroy();
+            player.crash();
+        }
+    }
 }
 
 window.addEventListener('keydown', e => keys[e.code] = true);
@@ -648,12 +657,13 @@ document.getElementById('fire-btn').addEventListener('touchend', () => keys['fir
 document.getElementById('restart-btn').addEventListener('click', restartGame);
 
 function gameLoop() {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, width, height);
+
     if (gameOver) {
         requestAnimationFrame(gameLoop);
         return;
     }
-
-    ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, width, height);
 
     player.handle_input(keys);
