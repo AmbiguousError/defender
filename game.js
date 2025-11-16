@@ -141,9 +141,8 @@ class GameObject {
 
 class Player extends GameObject {
     constructor(position) {
-        const points_right = [ {x: 15, y: 0}, {x: -12, y: -8}, {x: -7, y: 0}, {x: -12, y: 8} ];
-        super(position, 'green', points_right);
-        this.points_left = points_right.map(p => ({x: -p.x, y: p.y}));
+        const points = [ {x: 15, y: 0}, {x: -12, y: -8}, {x: -7, y: 0}, {x: -12, y: 8} ];
+        super(position, 'green', points);
         this.facing_direction = 1;
         this.acceleration = 0.28;
         this.friction = 0.95;
@@ -171,8 +170,7 @@ class Player extends GameObject {
 
         if (new_facing_direction !== this.facing_direction) {
             this.facing_direction = new_facing_direction;
-            this.base_points = this.facing_direction === -1 ? this.points_left : this.points_right;
-            this.max_radius = Math.max(...this.base_points.map(p => Math.hypot(p.x, p.y)));
+            this.angle = this.facing_direction === -1 ? Math.PI : 0;
         }
 
         if ((keys['Space'] || keys['fire-btn']) && this.can_fire) {
@@ -488,14 +486,14 @@ class Terrain {
         ctx.stroke();
 
         // Draw the wrapped terrain segment if needed
-        if (camera_offset_x < width) {
+        if (camera_offset_x < width || camera_offset_x > this.world_width - width) {
             ctx.beginPath();
             for (const point of this.points) {
                 ctx.lineTo(point.x - camera_offset_x + this.world_width, point.y);
             }
             ctx.stroke();
         }
-        if (camera_offset_x > this.world_width - width * 2) {
+        if (camera_offset_x > this.world_width - width * 2 || camera_offset_x < 0) {
             ctx.beginPath();
             for (const point of this.points) {
                 ctx.lineTo(point.x - camera_offset_x - this.world_width, point.y);
